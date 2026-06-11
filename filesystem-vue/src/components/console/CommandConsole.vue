@@ -13,7 +13,7 @@
     <div class="console-input-line">
       <span class="console-prompt">{{ store.currentPath }}$</span>
       <input class="console-input" v-model="command" @keydown.enter="execCommand"
-             ref="inputRef" placeholder="输入命令 (help 查看帮助)" />
+             ref="inputRef" placeholder="输入 help 查看所有命令及用法" />
     </div>
   </div>
 </template>
@@ -59,17 +59,17 @@ async function parseCommand(input) {
     switch (cmd) {
       case 'help':
       case '?':
-        store.addConsole('命令列表: format, mkdir, rmdir, ls, cd, pwd, tree', 'system')
-        store.addConsole('  create, open, close, read, write, delete', 'system')
-        store.addConsole('  rename, copy, move, stat, save, info, exit', 'system')
+        showHelp()
         break
       case 'format': await store.format(); break
       case 'save': await store.save(); break
       case 'info': await store.getInfo(); break
       case 'pwd': store.addConsole(store.currentPath, 'info'); break
       case 'ls': {
-        const path = args[0] || '.'
-        store.addConsole(store.entries.map(e => (e.type === 'directory' ? '📁' : '📄') + ' ' + e.name).join('\n') || '(空)', 'info')
+        store.addConsole(
+          store.entries.map(e => (e.type === 'directory' ? '📁' : '📄') + ' ' + e.name).join('\n') || '(空)',
+          'info'
+        )
         break
       }
       case 'cd':
@@ -84,7 +84,7 @@ async function parseCommand(input) {
         if (args[0]) {
           const res = await (await import('../../api/fileSystem.js')).default.rmdir(args[0])
           if (res.success) { store.addConsole('目录已删除', 'success'); await store.refresh(); await store.loadTree() }
-          else store.addConsole('删除失败', 'error')
+          else store.addConsole('删除失败（非空或不存在）', 'error')
         } else store.addConsole('用法: rmdir <路径>', 'warning')
         break
       }
@@ -102,7 +102,10 @@ async function parseCommand(input) {
           const res = await (await import('../../api/fileSystem.js')).default.stat(args[0])
           if (res.success) {
             const s = res.data
-            store.addConsole(`名称: ${s.name}\n类型: ${s.type}\n大小: ${s.size} B\nInode: ${s.inodeNumber}\n创建: ${new Date(s.createTime * 1000).toLocaleString()}\n修改: ${new Date(s.modifyTime * 1000).toLocaleString()}\n块数: ${s.blockCount}`, 'info')
+            store.addConsole(
+              `── ${s.name} ──\n类型: ${s.type}\n大小: ${s.size} B\nInode: ${s.inodeNumber}\n创建: ${new Date(s.createTime * 1000).toLocaleString()}\n修改: ${new Date(s.modifyTime * 1000).toLocaleString()}\n块数: ${s.blockCount}`,
+              'info'
+            )
           } else store.addConsole('stat 失败', 'error')
         } else store.addConsole('用法: stat <路径>', 'warning')
         break
@@ -125,9 +128,12 @@ async function parseCommand(input) {
         break
       case 'open':
         if (args[0]) {
-          const path = args[0]
-          await store.preview(path)
+          await store.preview(args[0])
         } else store.addConsole('用法: open <路径>', 'warning')
+        break
+      case 'close':
+        store.previewFile = null
+        store.addConsole('文件已关闭', 'success')
         break
       case 'exit':
       case 'quit':
@@ -141,4 +147,42 @@ async function parseCommand(input) {
     store.addConsole('错误: ' + e.message, 'error')
   }
 }
+
+function showHelp() {
+  const help = `
+╔══════════════════════════════════════════════════════╗
+║                     命令帮助                         ║
+╠══════════════════════════════════════════════════════╣
+║  系统管理                                           ║
+║    format         格式化虚拟磁盘（所有数据丢失）       ║
+║    save           手动保存磁盘映像到文件              ║
+║    info           显示系统信息（块数/使用率等）       ║
+║    exit / quit    保存并退出                         ║
+║                                                     ║
+║  目录操作                                           ║
+║    mkdir <路径>   创建目录                           ║
+║    rmdir <路径>   删除空目录                         ║
+║    ls [路径]      列出目录内容                      ║
+║    cd <路径>      切换工作目录                      ║
+║    pwd            显示当前工作目录路径               ║
+║    tree [路径]    树形显示目录结构                  ║
+║                                                     ║
+║  文件操作                                           ║
+║    create <路径>  创建文件                          ║
+║    open <路径>    打开文件（在预览面板中查看）       ║
+║    close          关闭当前预览的文件                 ║
+║    delete <路径>  删除文件                          ║
+║                                                     ║
+║  附加操作                                           ║
+║    rename <旧> <新>  重命名文件或目录               ║
+║    copy <源> <目标>  复制文件                      ║
+║    move <源> <目标>  移动文件                      ║
+║    stat <路径>      查看文件/目录详细信息           ║
+║                                                     ║
+║  💡 提示：也可以在文件列表中左键进入/打开，右键菜单操作 ║
+╚══════════════════════════════════════════════════════╝
+`
+  store.addConsole(help, 'system')
+}
+
 </script>
