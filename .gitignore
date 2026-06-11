@@ -1,6 +1,0 @@
-*.class
-filesystem.img
-filesystem-vue/dist/
-filesystem-vue/node_modules/
-filesystem-core/build/
-filesystem-core/test-lib/
