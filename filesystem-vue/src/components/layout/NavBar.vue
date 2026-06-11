@@ -9,9 +9,10 @@
       </span>
     </div>
     <div class="btn-group">
-      <el-button size="small" type="primary" @click="showNewFile = true">📄 新建文件</el-button>
-      <el-button size="small" type="success" @click="showNewDir = true">📁 新建目录</el-button>
-      <el-button size="small" @click="store.refresh()">🔄 刷新</el-button>
+      <el-button size="small" type="primary" @click="showNewFile = true" title="在当前目录创建新文件">📄 新建文件</el-button>
+      <el-button size="small" type="success" @click="showNewDir = true" title="在当前目录创建子目录">📁 新建目录</el-button>
+      <el-button size="small" @click="showStatDialog" title="查看当前目录详细信息">ℹ️ 属性</el-button>
+      <el-button size="small" @click="store.refresh()" title="刷新当前目录列表">🔄 刷新</el-button>
     </div>
 
     <el-dialog v-model="showNewFile" title="新建文件" width="400px">
@@ -72,5 +73,19 @@ function doNewDir() {
   store.mkdir(path)
   showNewDir.value = false
   newDirName.value = ''
+}
+
+async function showStatDialog() {
+  const path = store.currentPath
+  const res = await (await import('../../api/fileSystem.js')).default.stat(path)
+  if (res.success) {
+    const s = res.data
+    store.addConsole(
+      `── ${s.name || '/'} ──\n类型: ${s.type}\n大小: ${s.size} B\nInode: ${s.inodeNumber}\n创建: ${new Date(s.createTime * 1000).toLocaleString()}\n修改: ${new Date(s.modifyTime * 1000).toLocaleString()}\n块数: ${s.blockCount}`,
+      'info'
+    )
+  } else {
+    store.addConsole(`属性: ${path} (根目录)`, 'info')
+  }
 }
 </script>

@@ -46,6 +46,8 @@ export const useFsStore = defineStore('fileSystem', {
         }
         await this.refreshDir(this.currentPath)
         await this.loadTree()
+        // 展开当前路径上的所有节点
+        this.expandPathInTree(this.currentPath)
         return true
       }
       this.addConsole('目录切换失败: ' + (res.message || path), 'error')
@@ -66,7 +68,7 @@ export const useFsStore = defineStore('fileSystem', {
     parseTree(treeStr) {
       const lines = treeStr.split('\n').filter(l => l.trim())
       if (lines.length === 0) return
-      const root = { name: '/', type: 'directory', children: [], expanded: true }
+      const root = { name: '/', type: 'directory', children: [], expanded: true, _path: '/' }
       const stack = [{ node: root, indent: -1 }]
 
       for (let i = 1; i < lines.length; i++) {
@@ -84,11 +86,32 @@ export const useFsStore = defineStore('fileSystem', {
         }
 
         const parent = stack[stack.length - 1].node
-        const node = { name, type: isDir ? 'directory' : 'file', children: [], expanded: false }
+        const parentPath = parent._path || '/'
+        const nodePath = parentPath === '/' ? '/' + name : parentPath + '/' + name
+        const node = { name, type: isDir ? 'directory' : 'file', children: [], expanded: false, _path: nodePath }
         parent.children.push(node)
         if (isDir) stack.push({ node, indent })
       }
       this.treeData = root
+    },
+
+    /** 展开目录树中当前路径上的所有节点。 */
+    expandPathInTree(path) {
+      if (!path || path === '/') return
+      const parts = path.split('/').filter(Boolean)
+      let current = this.treeData
+      current.expanded = true
+
+      for (const part of parts) {
+        if (!current.children) break
+        const child = current.children.find(c => c.name === part && c.type === 'directory')
+        if (child) {
+          child.expanded = true
+          current = child
+        } else {
+          break
+        }
+      }
     },
 
     async format() {
@@ -108,6 +131,7 @@ export const useFsStore = defineStore('fileSystem', {
         this.addConsole('目录已创建: ' + path, 'success')
         await this.refresh()
         await this.loadTree()
+        this.expandPathInTree(this.currentPath)
       } else {
         this.addConsole('创建目录失败', 'error')
       }
@@ -131,6 +155,7 @@ export const useFsStore = defineStore('fileSystem', {
         if (this.previewFile === path) this.previewFile = null
         await this.refresh()
         await this.loadTree()
+        this.expandPathInTree(this.currentPath)
       } else {
         this.addConsole('删除失败', 'error')
       }
@@ -183,6 +208,7 @@ export const useFsStore = defineStore('fileSystem', {
         this.addConsole('移动成功: ' + src + ' → ' + dst, 'success')
         await this.refresh()
         await this.loadTree()
+        this.expandPathInTree(this.currentPath)
       } else {
         this.addConsole('移动失败', 'error')
       }

@@ -5,6 +5,7 @@ import com.fs.model.*;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
+import java.io.BufferedReader;
 
 import java.io.*;
 import java.net.InetSocketAddress;
@@ -41,26 +42,56 @@ public class ApiServer {
     }
 
     private void setupRoutes() {
-        server.createContext("/api/format", jsonHandler(this::handleFormat));
-        server.createContext("/api/save", jsonHandler(this::handleSave));
-        server.createContext("/api/info", jsonHandler(this::handleInfo));
-        server.createContext("/api/mkdir", jsonHandler(this::handleMkdir));
-        server.createContext("/api/rmdir", jsonHandler(this::handleRmdir));
-        server.createContext("/api/ls", jsonHandler(this::handleLs));
-        server.createContext("/api/cd", jsonHandler(this::handleCd));
-        server.createContext("/api/pwd", jsonHandler(this::handlePwd));
-        server.createContext("/api/tree", jsonHandler(this::handleTree));
-        server.createContext("/api/create", jsonHandler(this::handleCreate));
-        server.createContext("/api/open", jsonHandler(this::handleOpen));
-        server.createContext("/api/close", jsonHandler(this::handleClose));
-        server.createContext("/api/read", jsonHandler(this::handleRead));
-        server.createContext("/api/write", jsonHandler(this::handleWrite));
-        server.createContext("/api/delete", jsonHandler(this::handleDelete));
-        server.createContext("/api/rename", jsonHandler(this::handleRename));
-        server.createContext("/api/copy", jsonHandler(this::handleCopy));
-        server.createContext("/api/move", jsonHandler(this::handleMove));
-        server.createContext("/api/stat", jsonHandler(this::handleStat));
-        server.createContext("/api/file/content", jsonHandler(this::handleFileContent));
+        // /api 处理精确路径 /api（显示 API 根信息）
+        server.createContext("/api", jsonHandler(this::handleApiRoot));
+        // /api/ 处理所有 /api/xxx 子路径
+        server.createContext("/api/", jsonHandler(this::handleApiSubExchange));
+    }
+
+
+    /** 处理 /api/xxx 子路径请求。 */
+    private void handleApiSubExchange(HttpExchange exchange) throws Exception {
+        String path = exchange.getRequestURI().getPath();
+        String sub = path.length() > 4 ? path.substring(4) : "/";
+        if (sub.isEmpty()) sub = "/";
+        if (sub.equals("/")) {
+            handleApiRoot(exchange);
+        } else {
+            dispatchBySubPath(exchange, sub);
+        }
+    }
+
+    /** 根据子路径分发到各处理方法。 */
+    private void dispatchBySubPath(HttpExchange exchange, String sub) throws Exception {
+        if (sub.equals("/")) {
+            handleApiRoot(exchange);
+            return;
+        }
+
+        switch (sub) {
+            case "/format":        handleFormat(exchange); break;
+            case "/save":          handleSave(exchange); break;
+            case "/info":          handleInfo(exchange); break;
+            case "/mkdir":         handleMkdir(exchange); break;
+            case "/rmdir":         handleRmdir(exchange); break;
+            case "/ls":            handleLs(exchange); break;
+            case "/cd":            handleCd(exchange); break;
+            case "/pwd":           handlePwd(exchange); break;
+            case "/tree":          handleTree(exchange); break;
+            case "/create":        handleCreate(exchange); break;
+            case "/open":          handleOpen(exchange); break;
+            case "/close":         handleClose(exchange); break;
+            case "/read":          handleRead(exchange); break;
+            case "/write":         handleWrite(exchange); break;
+            case "/delete":        handleDelete(exchange); break;
+            case "/rename":        handleRename(exchange); break;
+            case "/copy":          handleCopy(exchange); break;
+            case "/move":          handleMove(exchange); break;
+            case "/stat":          handleStat(exchange); break;
+            case "/file/content":  handleFileContent(exchange); break;
+            default:
+                sendJson(exchange, 404, errorJson("未知端点: /api" + sub));
+        }
     }
 
     /** 包装处理器，统一处理 CORS 和 JSON 响应。 */
@@ -144,6 +175,37 @@ public class ApiServer {
     private void handleFormat(HttpExchange exchange) throws Exception {
         fs.format();
         success(exchange, null);
+    }
+
+    /** /api 根路径 — 返回可用端点列表。 */
+    private void handleApiRoot(HttpExchange exchange) throws Exception {
+        java.util.Map<String, Object> data = new java.util.LinkedHashMap<>();
+        data.put("service", "文件系统 REST API");
+        data.put("version", "1.0");
+        data.put("endpoints", java.util.List.of(
+            "GET  /api/info         系统信息",
+            "POST /api/format       格式化",
+            "POST /api/save         保存",
+            "POST /api/mkdir        创建目录",
+            "POST /api/rmdir        删除目录",
+            "GET  /api/ls           列出目录",
+            "POST /api/cd           切换目录",
+            "GET  /api/pwd          当前路径",
+            "GET  /api/tree         目录树",
+            "POST /api/create       创建文件",
+            "POST /api/open         打开文件",
+            "POST /api/close        关闭文件",
+            "POST /api/read         读文件",
+            "POST /api/write        写文件",
+            "POST /api/delete       删除文件",
+            "POST /api/rename       重命名",
+            "POST /api/copy         复制",
+            "POST /api/move         移动",
+            "GET  /api/stat         文件信息",
+            "GET  /api/file/content 读文件内容",
+            "POST /api/file/content 写文件内容"
+        ));
+        success(exchange, data);
     }
 
     private void handleSave(HttpExchange exchange) throws Exception {

@@ -1,12 +1,14 @@
 <template>
-  <div class="tree-node" :style="{ paddingLeft: depth * 16 + 'px' }">
+  <div class="tree-node" :style="{ paddingLeft: depth * 10 + 'px' }">
     <div class="node-label"
          :class="{ active: isActive }"
-         @click="onClick"
          @contextmenu.prevent="onContextMenu">
-      <span class="expand-icon">{{ isDir ? (node.expanded ? '▼' : '▶') : '' }}</span>
-      <span>{{ isDir ? '📁' : '📄' }}</span>
-      <span>{{ node.name === '/' ? '/' : node.name }}</span>
+      <!-- 展开/折叠三角（单独处理，不触发导航） -->
+      <span v-if="isDir" class="expand-icon" @click.stop="toggleExpand">{{ node.expanded ? '▼' : '▶' }}</span>
+      <span v-else class="expand-icon"></span>
+      <!-- 图标 + 名称（左键导航/打开） -->
+      <span @click="onNavigate">{{ isDir ? '📁' : '📄' }}</span>
+      <span @click="onNavigate" style="flex:1">{{ node.name === '/' ? '/' : node.name }}</span>
     </div>
     <div v-if="node.expanded && node.children" class="node-children">
       <TreeNode v-for="(child, i) in node.children" :key="child.name + '-' + i"
@@ -33,22 +35,27 @@ const ctxMenu = ref(null)
 const isDir = computed(() => props.node.type === 'directory')
 
 const isActive = computed(() => {
-  if (isDir.value) {
-    const path = store.currentPath === '/' ? '/' : store.currentPath
-    return props.node.name === '/' ? path === '/' : path.endsWith('/' + props.node.name)
-  }
-  return false
+  if (!isDir.value) return false
+  const currentPath = store.currentPath === '/' ? '/' : store.currentPath
+  const nodePath = props.node._path
+  return nodePath === currentPath
 })
 
-/** 左键单击：目录展开/进入，文件打开预览 */
-function onClick() {
+/** 点击展开三角：仅切换展开/折叠，不导航 */
+function toggleExpand() {
+  props.node.expanded = !props.node.expanded
+  if (props.node.expanded && props.node.name === '/' && !props.node.children.length) {
+    store.loadTree()
+  }
+}
+
+/** 点击图标或名称：目录导航进入，文件打开预览 */
+function onNavigate() {
   if (isDir.value) {
-    // 根目录特殊处理
     if (props.node.name === '/') {
       store.cd('/')
       return
     }
-    // 找完整路径然后 cd
     const path = findNodePath(props.node)
     if (path) store.cd(path)
   } else {
