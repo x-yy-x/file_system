@@ -2,14 +2,14 @@
   <div class="top-bar">
     <div class="title">📁 文件系统管理模拟器</div>
     <div class="actions">
-      <el-button size="small" @click="store.save()" title="将虚拟磁盘保存到文件" plain style="color:white;border-color:rgba(255,255,255,0.3)">
-        💾 保存
+      <el-button size="small" @click="store.save()" plain style="color:#333;border-color:rgba(255,255,255,0.3)">
+        💾 保存到文件
       </el-button>
-      <el-button size="small" @click="store.getInfo()" title="查看系统信息（块数/使用率等）" plain style="color:white;border-color:rgba(255,255,255,0.3)">
-        ℹ️ 信息
+      <el-button size="small" @click="store.getInfo()" plain style="color:#333;border-color:rgba(255,255,255,0.3)">
+        ℹ️ 系统信息
       </el-button>
-      <el-button size="small" @click="store.format()" title="格式化虚拟磁盘（所有数据将丢失）" plain style="color:#f56c6c;border-color:#f56c6c">
-        ⚠️ 格式化
+      <el-button size="small" @click="store.format()" plain style="color:#f56c6c;border-color:#f56c6c">
+        ⚠️ 格式化磁盘
       </el-button>
     </div>
   </div>

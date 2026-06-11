@@ -59,18 +59,18 @@ function navigateTo(index) {
   store.cd('/' + parts.join('/'))
 }
 
-function doNewFile() {
+async function doNewFile() {
   if (!newFileName.value) return
   const path = store.currentPath === '/' ? '/' + newFileName.value : store.currentPath + '/' + newFileName.value
-  store.createFile(path)
+  await store.createFile(path)
   showNewFile.value = false
   newFileName.value = ''
 }
 
-function doNewDir() {
+async function doNewDir() {
   if (!newDirName.value) return
   const path = store.currentPath === '/' ? '/' + newDirName.value : store.currentPath + '/' + newDirName.value
-  store.mkdir(path)
+  await store.mkdir(path)
   showNewDir.value = false
   newDirName.value = ''
 }

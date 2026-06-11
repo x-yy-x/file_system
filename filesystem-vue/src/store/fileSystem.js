@@ -142,6 +142,8 @@ export const useFsStore = defineStore('fileSystem', {
       if (res.success) {
         this.addConsole('文件已创建: ' + path, 'success')
         await this.refresh()
+        await this.loadTree()
+        this.expandPathInTree(this.currentPath)
       } else {
         this.addConsole('创建文件失败', 'error')
       }
@@ -197,6 +199,8 @@ export const useFsStore = defineStore('fileSystem', {
       if (res.success) {
         this.addConsole('复制成功: ' + src + ' → ' + dst, 'success')
         await this.refresh()
+        await this.loadTree()
+        this.expandPathInTree(this.currentPath)
       } else {
         this.addConsole('复制失败', 'error')
       }

@@ -407,15 +407,28 @@ public class ApiServer {
             if (path == null) { error(exchange, 400, "缺少 path 参数"); return; }
 
             int fd = fs.open(path, com.fs.model.FileDescriptor.READ);
-            if (fd < 0) { error(exchange, 404, "文件不存在"); return; }
-            FileStat stat = fs.stat(path);
-            byte[] data = fs.read(fd, stat != null ? stat.size : 4096);
-            fs.close(fd);
+            if (fd < 0) {
+                // 尝试作为目录处理
+                FileStat dirStat = fs.stat(path);
+                if (dirStat != null && dirStat.type == 2) {
+                    error(exchange, 400, "是目录，不是文件");
+                } else {
+                    error(exchange, 404, "文件不存在");
+                }
+                return;
+            }
+            try {
+                FileStat stat = fs.stat(path);
+                // 空文件也能正常读取（size=0 → 读0字节 → 返回空字符串）
+                byte[] data = fs.read(fd, stat != null ? Math.max(stat.size, 0) : 4096);
 
-            Map<String, Object> res = new LinkedHashMap<>();
-            res.put("path", path);
-            res.put("content", data != null ? new String(data, StandardCharsets.UTF_8) : "");
-            success(exchange, res);
+                Map<String, Object> res = new LinkedHashMap<>();
+                res.put("path", path);
+                res.put("content", data != null ? new String(data, StandardCharsets.UTF_8) : "");
+                success(exchange, res);
+            } finally {
+                fs.close(fd);
+            }
             return;
         }
 
@@ -431,13 +444,15 @@ public class ApiServer {
 
         int fd = fs.open(path, com.fs.model.FileDescriptor.WRITE);
         if (fd < 0) { error(exchange, 500, "打开文件失败"); return; }
-        byte[] dataBytes = content.getBytes(StandardCharsets.UTF_8);
-        int written = fs.write(fd, dataBytes);
-        fs.close(fd);
-
-        Map<String, Integer> res = new HashMap<>();
-        res.put("bytesWritten", written);
-        success(exchange, res);
+        try {
+            byte[] dataBytes = content.getBytes(StandardCharsets.UTF_8);
+            int written = fs.write(fd, dataBytes);
+            Map<String, Integer> res = new HashMap<>();
+            res.put("bytesWritten", written);
+            success(exchange, res);
+        } finally {
+            fs.close(fd);
+        }
     }
 
     // ==================== 辅助方法 ====================
