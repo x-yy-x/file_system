@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 420" width="500" height="420">
+  <rect width="500" height="420" fill="#FAFBFC"/>
+  
+<rect x="170" y="10" width="160" height="35" rx="4" fill="#E3F2FD" stroke="#1976D2" stroke-width="1.5"/>
+<text x="250" y="27.5" text-anchor="middle" dominant-baseline="central" font-family="Arial" font-size="13" fill="#0D47A1" font-weight="bold">save() 保存</text>
+<line x1="250" y1="45" x2="250" y2="70" stroke="#999" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+<rect x="130" y="70" width="240" height="35" rx="4" fill="#F5F5F5" stroke="#999" stroke-width="1.5"/>
+<text x="250" y="87.5" text-anchor="middle" dominant-baseline="central" font-family="Arial" font-size="12" fill="#333">更新 SuperBlock 空闲计数</text>
+<line x1="250" y1="105" x2="250" y2="130" stroke="#999" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+<rect x="130" y="130" width="240" height="35" rx="4" fill="#F5F5F5" stroke="#999" stroke-width="1.5"/>
+<text x="250" y="147.5" text-anchor="middle" dominant-baseline="central" font-family="Arial" font-size="12" fill="#333">BitmapManager.saveBitmap()</text>
+<line x1="250" y1="165" x2="250" y2="190" stroke="#999" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+<rect x="130" y="190" width="240" height="35" rx="4" fill="#F5F5F5" stroke="#999" stroke-width="1.5"/>
+<text x="250" y="207.5" text-anchor="middle" dominant-baseline="central" font-family="Arial" font-size="12" fill="#333">DiskDriver.saveToFile()</text>
+<line x1="250" y1="225" x2="250" y2="255" stroke="#999" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+<rect x="130" y="255" width="240" height="35" rx="4" fill="#C8E6C9" stroke="#388E3C" stroke-width="1.5"/>
+<text x="250" y="272.5" text-anchor="middle" dominant-baseline="central" font-family="Arial" font-size="13" fill="#1b5e20" font-weight="bold">写入 filesystem.img</text>
+// Load section
+<line x1="250" y1="290" x2="250" y2="310" stroke="#999" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+<rect x="130" y="310" width="240" height="35" rx="4" fill="#E3F2FD" stroke="#1976D2" stroke-width="1.5"/>
+<text x="250" y="327.5" text-anchor="middle" dominant-baseline="central" font-family="Arial" font-size="13" fill="#0D47A1" font-weight="bold">init() 启动加载</text>
+<line x1="250" y1="345" x2="250" y2="365" stroke="#999" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+<polygon points="250,365 370,390 250,415 130,390" fill="#FFF9C4" stroke="#F9A825" stroke-width="1.5"/>
+<text x="250" y="394" text-anchor="middle" font-family="Arial" font-size="12" fill="#333">文件存在且魔数正确?</text>
+// Yes
+<line x1="370" y1="390" x2="430" y2="390" stroke="#999" stroke-width="1.5" marker-end="url(#ar8)"/>
+<text x="405" y="382" text-anchor="middle" font-family="Arial" font-size="11" fill="#666">是</text>
+<rect x="430" y="373" width="100" height="35" rx="4" fill="#C8E6C9" stroke="#388E3C" stroke-width="1.5"/>
+<text x="480" y="390.5" text-anchor="middle" dominant-baseline="central" font-family="Arial" font-size="12" fill="#333">加载并恢复</text>
+// No
+<line x1="250" y1="415" x2="250" y2="440" stroke="#999" stroke-width="1.5"/>
+<text x="260" y="432" font-family="Arial" font-size="11" fill="#666">否</text>
+// No goes off screen but that's OK, it would go to format
+<defs>
+  <marker id="ar8" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="#999"/></marker>
+</defs>
+
+</svg>

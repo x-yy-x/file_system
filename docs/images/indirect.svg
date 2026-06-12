@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 480" width="700" height="480">
+  <rect width="700" height="480" fill="#FAFBFC"/>
+  
+<rect x="30" y="10" width="640" height="35" rx="4" fill="#E3F2FD" stroke="#1976D2" stroke-width="1.5"/>
+<text x="350" y="27.5" text-anchor="middle" dominant-baseline="central" font-family="Arial" font-size="14" fill="#0D47A1" font-weight="bold">间接块寻址流程 — getBlockPointer(inode, logicBlockNum)</text>
+// Start
+<rect x="260" y="60" width="180" height="35" rx="4" fill="#C8E6C9" stroke="#388E3C" stroke-width="1.5"/>
+<text x="350" y="77.5" text-anchor="middle" dominant-baseline="central" font-family="Arial" font-size="13" fill="#333">逻辑块号 logicBlockNum</text>
+<line x1="350" y1="95" x2="350" y2="115" stroke="#999" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+// Decision 1
+<polygon points="350,115 480,150 350,185 220,150" fill="#FFF9C4" stroke="#F9A825" stroke-width="1.5"/>
+<text x="350" y="154" text-anchor="middle" font-family="Arial" font-size="12" fill="#333">logicBlockNum &lt; 9?</text>
+// Yes branch
+<line x1="480" y1="150" x2="560" y2="150" stroke="#999" stroke-width="1.5" marker-end="url(#ar3)"/>
+<text x="520" y="142" text-anchor="middle" font-family="Arial" font-size="11" fill="#666">是</text>
+<rect x="560" y="130" width="130" height="40" rx="4" fill="#C8E6C9" stroke="#388E3C" stroke-width="1.5"/>
+<text x="625" y="150" text-anchor="middle" dominant-baseline="central" font-family="Arial" font-size="13" fill="#333">返回 direct[i]</text>
+// No → Decision 2
+<line x1="350" y1="185" x2="350" y2="215" stroke="#999" stroke-width="1.5" marker-end="url(#ar3)"/>
+<text x="360" y="205" font-family="Arial" font-size="11" fill="#666">否</text>
+<polygon points="350,215 480,250 350,285 220,250" fill="#FFF9C4" stroke="#F9A825" stroke-width="1.5"/>
+<text x="350" y="254" text-anchor="middle" font-family="Arial" font-size="12" fill="#333">logicBlockNum &lt; 137?</text>
+// Yes → Single indirect
+<line x1="480" y1="250" x2="560" y2="250" stroke="#999" stroke-width="1.5" marker-end="url(#ar3)"/>
+<text x="520" y="242" text-anchor="middle" font-family="Arial" font-size="11" fill="#666">是</text>
+<rect x="560" y="230" width="130" height="40" rx="4" fill="#C8E6C9" stroke="#388E3C" stroke-width="1.5"/>
+<text x="625" y="250" text-anchor="middle" dominant-baseline="central" font-family="Arial" font-size="13" fill="#333">一级间接寻址</text>
+// No → Double indirect
+<line x1="350" y1="285" x2="350" y2="315" stroke="#999" stroke-width="1.5" marker-end="url(#ar3)"/>
+<text x="360" y="305" font-family="Arial" font-size="11" fill="#666">否</text>
+<rect x="250" y="315" width="200" height="40" rx="4" fill="#C8E6C9" stroke="#388E3C" stroke-width="1.5"/>
+<text x="350" y="335" text-anchor="middle" dominant-baseline="central" font-family="Arial" font-size="13" fill="#333">二级间接寻址</text>
+// End
+<line x1="350" y1="355" x2="350" y2="390" stroke="#999" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+<rect x="260" y="390" width="180" height="35" rx="4" fill="#FFCDD2" stroke="#E53935" stroke-width="1.5"/>
+<text x="350" y="407.5" text-anchor="middle" dominant-baseline="central" font-family="Arial" font-size="13" fill="#b71c1c">返回 -1 (超出范围)</text>
+// Details
+<rect x="30" y="430" width="640" height="35" rx="4" fill="#F5F5F5" stroke="#CCC" stroke-width="1.5"/>
+<text x="350" y="447.5" text-anchor="middle" dominant-baseline="central" font-family="Arial" font-size="12" fill="#555">9 个直接块指针 (0~8)  |  一级间接块 128 个 (9~136)  |  二级间接块 16384 个 (137+)</text>
+<defs>
+  <marker id="ar3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="#999"/></marker>
+</defs>
+
+</svg>
